@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#126b4b"><meta name="description" content="ব্যক্তিগত দৈনিক রিপোর্ট বই—অফলাইন ও ক্লাউড সিঙ্ক"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg" type="image/svg+xml"><title>ব্যক্তিগত রিপোর্ট বই</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap');
+:root{--g:#126b4b;--g2:#19845c;--bg:#f3f7f4;--ink:#18251f;--muted:#68776e;--line:#dce7df;--white:#fff;--red:#b93838}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif}
+header{padding:20px max(16px,calc((100% - 1100px)/2));background:linear-gradient(120deg,#0b5138,#19845c);color:#fff}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:46px;height:46px;display:grid;place-items:center;border-radius:14px;background:#ffffff22;font-size:25px}h1{font-size:23px;margin:0}header p{margin:2px 0 0;color:#d8eee3}
+main{max-width:1100px;margin:20px auto;padding:0 15px 40px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:14px;box-shadow:0 3px 14px #123a2010}
+h2{font-size:20px;margin:0 0 12px}h3{font-size:16px;color:var(--g);margin:0 0 10px}
+label{display:block;font-weight:600;font-size:14px;margin-bottom:4px}input,select,textarea{font:inherit;width:100%;border:1px solid #cbd9cf;border-radius:10px;padding:10px;background:#fff;color:var(--ink)}textarea{min-height:70px}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}.field{grid-column:span 4}.half{grid-column:span 6}.full{grid-column:span 12}.third{grid-column:span 4}
+.btn{font:inherit;border:0;border-radius:10px;padding:10px 15px;background:var(--g);color:white;font-weight:600;cursor:pointer}.btn.alt{background:#e6f2eb;color:var(--g)}.btn.red{background:#fff0f0;color:var(--red)}.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.tabs{display:flex;gap:8px;overflow:auto;margin-bottom:14px}.tab{white-space:nowrap;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px;font:inherit;cursor:pointer}.tab.active{background:var(--g);color:#fff}
+.hidden{display:none!important}.muted{font-size:13px;color:var(--muted)}.status{padding:10px 12px;border-radius:10px;background:#eef7f1;color:#145b3c;margin:10px 0}.status.err{background:#fff0f0;color:#a32626}
+table{border-collapse:collapse;width:100%;min-width:620px}th,td{text-align:left;padding:9px;border-bottom:1px solid var(--line);font-size:14px}th{background:#f2f7f3}.scroll{overflow:auto}.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.stat{padding:13px;border:1px solid var(--line);border-radius:12px}.stat strong{display:block;font-size:23px;color:var(--g)}footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
+@media(max-width:700px){.field,.third,.half{grid-column:span 6}.statgrid{grid-template-columns:repeat(2,1fr)}h1{font-size:20px}}
+@media(max-width:450px){.field,.third,.half{grid-column:span 12}}
+@media print{header,.tabs,.noprint,footer{display:none!important}body{background:#fff}.card{box-shadow:none}}
+</style>
+</head>
+<body>
+<header><div class="brand"><div class="logo">📘</div><div><h1>ব্যক্তিগত রিপোর্ট বই</h1><p>অনলাইন অ্যাকাউন্ট · ক্লাউড ব্যাকআপ · প্রশাসনিক প্যানেল</p></div></div></header>
+<main>
+<section id="auth">
+<div class="card">
+<h2>অ্যাকাউন্টে প্রবেশ</h2><p class="muted">নতুন অ্যাকাউন্ট তৈরি করুন অথবা ইমেইল ও পাসওয়ার্ড দিয়ে লগইন করুন। Gmail দিয়ে সাইন-ইন নয়—ইমেইল/পাসওয়ার্ড পদ্ধতি।</p>
+<div id="authMsg" class="status hidden"></div>
+<div class="grid">
+<div class="field half"><label>ইমেইল</label><input id="email" type="email" autocomplete="email" placeholder="আপনার ইমেইল" required></div>
+<div class="field half"><label>পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)</label><input id="password" type="password" autocomplete="current-password" placeholder="পাসওয়ার্ড" required></div>
+</div>
+<div class="btnrow"><button class="btn" id="loginBtn">লগইন</button><button class="btn alt" id="signupBtn">নতুন অ্যাকাউন্ট</button><button class="btn alt" id="resetBtn">পাসওয়ার্ড রিসেট</button></div>
+<p class="muted">প্রথমবার ব্যবহারের আগে README-তে দেওয়া Supabase সেটআপ সম্পন্ন করতে হবে।</p>
+</div></section>
+<section id="app" class="hidden">
+<div class="card">
+<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap"><div><h2 id="welcome">ড্যাশবোর্ড</h2><div class="muted" id="userEmail"></div><span id="roleBadge" class="muted">সাধারণ ব্যবহারকারী</span></div><button class="btn alt" id="logoutBtn">লগআউট</button></div>
+<div id="appMsg" class="status hidden"></div><div id="syncStatus" class="status">অফলাইন সেভ ও ক্লাউড সিঙ্ক প্রস্তুত হচ্ছে…</div>
+</div>
+<div class="tabs noprint"><button class="tab active" data-tab="entry">দৈনিক রিপোর্ট</button><button class="tab" data-tab="history">আমার রিপোর্ট</button><button class="tab" data-tab="monthly">মাসিক সারাংশ</button><button class="tab hidden" id="adminTab" data-tab="admin">প্রশাসনিক প্যানেল</button></div>
+<section id="entry">
+<div class="card"><h2 id="entryTitle">দৈনিক রিপোর্ট লিখুন</h2><form id="reportForm"><input id="editId" type="hidden">
+<div class="grid">
+<div class="field"><label>তারিখ *</label><input id="date" type="date" required></div>
+<div class="field"><label>নাম</label><input id="name" placeholder="নাম"></div><div class="field"><label>শাখা/এলাকা</label><input id="unit" placeholder="ঐচ্ছিক"></div>
+<div class="card third"><h3>কুরআন ও হাদিস</h3><label>কুরআন তিলাওয়াত (পৃষ্ঠা)</label><input id="quranPages" type="number" min="0"><label>তাফসির/অর্থ অধ্যয়ন (আয়াত)</label><input id="tafsirAyat" type="number" min="0"><label>হাদিস পাঠ (সংখ্যা)</label><input id="hadithCount" type="number" min="0"><label>হাদিস মুখস্থ (সংখ্যা)</label><input id="hadithMem" type="number" min="0"></div>
+<div class="card third"><h3>অধ্যয়ন ও ইবাদত</h3><label>বই অধ্যয়ন (পৃষ্ঠা)</label><input id="bookPages" type="number" min="0"><label>পত্রিকা (পৃষ্ঠা)</label><input id="magPages" type="number" min="0"><label>পঠিত বই/বিষয়</label><input id="bookName"><label>জামাতে সালাত (ওয়াক্ত)</label><input id="jamaat" type="number" min="0" max="5"><label>মোট সালাত (ওয়াক্ত)</label><input id="prayers" type="number" min="0" max="5"><label>নফল সালাত (রাকাত)</label><input id="naflPrayer" type="number" min="0"><label>নফল রোজা</label><select id="fasting"><option>না</option><option>হ্যাঁ</option></select></div>
+<div class="card third"><h3>কার্যক্রম</h3><label>তা’লীমী বৈঠক</label><input id="talim" type="number" min="0"><label>প্রশিক্ষণ/সভা</label><input id="meeting" type="number" min="0"><label>বৈঠকে সময় (মিনিট)</label><input id="meetingMin" type="number" min="0"><label>দাওয়াতি কাজে সময় (মিনিট)</label><input id="dawatMin" type="number" min="0"><label>যোগাযোগ (জন)</label><input id="contacts" type="number" min="0"><label>বই বিতরণ (টি)</label><input id="booksDist" type="number" min="0"><label>লিফলেট বিতরণ (টি)</label><input id="leaflets" type="number" min="0"><label>সফর (সংখ্যা)</label><input id="trips" type="number" min="0"></div>
+<div class="card third"><h3>পরিবার ও সমাজ</h3><label>পারিবারিক তা’লীম (মিনিট)</label><input id="familyMin" type="number" min="0"><label>সামাজিক কাজ (মিনিট)</label><input id="socialMin" type="number" min="0"><label>অন্যান্য কাজ (মিনিট)</label><input id="otherMin" type="number" min="0"><label>দিনের মূল্যায়ন</label><select id="mood"><option value="">নির্বাচন করুন</option><option>ভালো</option><option>মোটামুটি</option><option>উন্নতি প্রয়োজন</option></select></div>
+<div class="field full"><label>আত্মসমালোচনা ও আগামীকালের পরিকল্পনা</label><textarea id="reflection"></textarea></div><div class="field full"><label>অতিরিক্ত নোট</label><textarea id="notes"></textarea></div>
+</div><div class="btnrow noprint"><button class="btn" type="submit">ক্লাউডে সংরক্ষণ</button><button class="btn alt" type="button" id="clearBtn">নতুন রিপোর্ট</button><button class="btn alt" type="button" onclick="window.print()">প্রিন্ট / PDF</button></div></form></div>
+</section>
+<section id="history" class="hidden"><div class="card"><h2>আমার রিপোর্ট</h2><div class="grid noprint"><div class="field"><label>মাস</label><input id="historyMonth" type="month"></div><div class="field"><label>খুঁজুন</label><input id="query" placeholder="বই, নোট, তারিখ"></div><div class="field" style="align-self:end"><button class="btn alt" id="refreshBtn">রিফ্রেশ</button></div></div><div class="scroll"><table><thead><tr><th>তারিখ</th><th>কুরআন</th><th>বই</th><th>জামাত</th><th>দাওয়াতি সময়</th><th class="noprint">কাজ</th></tr></thead><tbody id="reportRows"></tbody></table></div><p id="noReports" class="muted hidden">কোনো রিপোর্ট পাওয়া যায়নি।</p></div></section>
+<section id="monthly" class="hidden"><div class="card"><h2>মাসিক সারাংশ</h2><div class="grid noprint"><div class="field"><label>মাস</label><input id="month" type="month"></div><div class="field" style="align-self:end"><button class="btn" id="summaryBtn">সারাংশ তৈরি</button></div><div class="field" style="align-self:end"><button class="btn alt" onclick="window.print()">প্রিন্ট / PDF</button></div></div><div id="summary"></div></div></section>
+<section id="admin" class="hidden"><div class="card"><h2>প্রশাসনিক প্যানেল</h2><p class="muted">শুধু admin হিসেবে অনুমোদিত অ্যাকাউন্ট এই অংশ ব্যবহার করতে পারবে।</p><div class="btnrow noprint"><button class="btn" id="loadUsersBtn">ব্যবহারকারীর তালিকা লোড</button><button class="btn alt" id="loadAllBtn">সকল রিপোর্ট লোড</button></div><div id="adminMsg" class="status hidden"></div><div class="scroll"><table><thead><tr><th>ইমেইল / UID</th><th>রোল</th><th>অ্যাকাউন্টের UID</th></tr></thead><tbody id="usersRows"></tbody></table></div><h3 style="margin-top:18px">রিপোর্ট পর্যবেক্ষণ</h3><div class="scroll"><table><thead><tr><th>তারিখ</th><th>ব্যবহারকারী UID</th><th>কুরআন</th><th>বই</th><th>নোট</th></tr></thead><tbody id="allRows"></tbody></table></div></div></section>
+</section>
+<footer>আপনার ব্যক্তিগত রিপোর্ট আপনার অ্যাকাউন্টে ক্লাউডে সংরক্ষিত হবে। গোপনীয়তা ও প্রবেশাধিকার Supabase Row Level Security (RLS) দ্বারা নিয়ন্ত্রিত।</footer>
+</main>
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+// Supabase Dashboard → Project Settings → API থেকে URL ও anon/public key বসান।
+const SUPABASE_URL = "https://crcdurimlfdmleycdohn.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_6CkTdi6WtxJ1nyShd6xvIw_DXqmh_ta";
+const $=id=>document.getElementById(id);
+let supabase=null,currentUser=null,userRole='user',reports=[];
+const DB_NAME='byaktigoto-report-offline-v1'; let dbPromise;
+function openDB(){if(dbPromise)return dbPromise;dbPromise=new Promise((resolve,reject)=>{const req=indexedDB.open(DB_NAME,1);req.onupgradeneeded=()=>{const d=req.result;if(!d.objectStoreNames.contains('reports'))d.createObjectStore('reports',{keyPath:'id'});if(!d.objectStoreNames.contains('queue'))d.createObjectStore('queue',{keyPath:'qid',autoIncrement:true})};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)});return dbPromise}
+async function storeGetAll(name){const d=await openDB();return new Promise((resolve,reject)=>{const r=d.transaction(name).objectStore(name).getAll();r.onsuccess=()=>resolve(r.result||[]);r.onerror=()=>reject(r.error)})}
+async function storePut(name,obj){const d=await openDB();return new Promise((resolve,reject)=>{const r=d.transaction(name,'readwrite').objectStore(name).put(obj);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+async function storeDelete(name,key){const d=await openDB();return new Promise((resolve,reject)=>{const r=d.transaction(name,'readwrite').objectStore(name).delete(key);r.onsuccess=()=>resolve();r.onerror=()=>reject(r.error)})}
+async function queueOp(op){await storePut('queue',{...op,queuedAt:new Date().toISOString()});updateSyncStatus()}
+function updateSyncStatus(){const el=$('syncStatus');if(!el)return;storeGetAll('queue').then(q=>{el.textContent=!navigator.onLine?`অফলাইন: ${q.length}টি পরিবর্তন ফোনে রাখা আছে; ইন্টারনেট এলে সিঙ্ক হবে।`:q.length?`ক্লাউডে পাঠানোর অপেক্ষায় ${q.length}টি পরিবর্তন আছে।`:'অনলাইন: ক্লাউড সিঙ্ক চালু; অফলাইন রিপোর্টও ফোনে রাখা হয়।';el.classList.toggle('err',!navigator.onLine) }).catch(()=>{el.textContent='অফলাইন স্টোরেজ চালু করা যায়নি।'})}
+window.addEventListener('online',()=>{updateSyncStatus();syncQueue()});window.addEventListener('offline',updateSyncStatus);
+const formFields=['date','name','unit','quranPages','tafsirAyat','hadithCount','hadithMem','bookPages','magPages','bookName','jamaat','prayers','naflPrayer','fasting','talim','meeting','meetingMin','dawatMin','contacts','booksDist','leaflets','trips','familyMin','socialMin','otherMin','mood','reflection','notes'];
+const nums=new Set(['quranPages','tafsirAyat','hadithCount','hadithMem','bookPages','magPages','jamaat','prayers','naflPrayer','talim','meeting','meetingMin','dawatMin','contacts','booksDist','leaflets','trips','familyMin','socialMin','otherMin']);
+function msg(id,s,err=false){$(id).textContent=s;$(id).classList.remove('hidden');$(id).classList.toggle('err',err)}
+function hide(id){$(id).classList.add('hidden')}
+function cleanErr(e){const m=e?.message||String(e||'');if(/Invalid login credentials/i.test(m))return 'ইমেইল বা পাসওয়ার্ড ভুল।';if(/already registered/i.test(m))return 'এই ইমেইলে অ্যাকাউন্ট আছে। লগইন করুন।';if(/Password should be at least/i.test(m))return 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।';if(/row-level security|permission denied/i.test(m))return 'অনুমতি নেই। Supabase SQL/RLS সেটআপ ও admin role যাচাই করুন।';return m||'সমস্যা হয়েছে; Supabase সেটআপ যাচাই করুন।'}
+function ready(){return SUPABASE_URL.startsWith('https://')&&!SUPABASE_URL.includes('YOUR_PROJECT_ID')&&SUPABASE_ANON_KEY!=='PASTE_SUPABASE_ANON_KEY'}
+if(!ready()){msg('authMsg','সেটআপ বাকি: README অনুসারে Supabase Project URL ও anon/public key index.html-এ বসান এবং SQL Editor-এ supabase_setup.sql চালান।',true)}
+else{try{supabase=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);const {data:{session}}=await supabase.auth.getSession();await handleSession(session);supabase.auth.onAuthStateChange((_event,session)=>{setTimeout(()=>handleSession(session),0)})}catch(e){msg('authMsg',cleanErr(e),true)}}
+async function handleSession(session){currentUser=session?.user||null;if(currentUser){$('auth').classList.add('hidden');$('app').classList.remove('hidden');$('userEmail').textContent=currentUser.email||currentUser.id;if(navigator.onLine){await ensureProfile();await loadProfile()}else{$('welcome').textContent='আমার ড্যাশবোর্ড (অফলাইন)';msg('appMsg','অফলাইনে আছেন। আগে এই ফোনে সংরক্ষিত রিপোর্ট দেখা ও নতুন রিপোর্ট লেখা যাবে।')}await loadReports();updateSyncStatus();if(navigator.onLine)syncQueue()}else{$('auth').classList.remove('hidden');$('app').classList.add('hidden')}}
+async function ensureProfile(){const {error}=await supabase.from('profiles').upsert({id:currentUser.id,email:currentUser.email||'',updated_at:new Date().toISOString()},{onConflict:'id',ignoreDuplicates:true});if(error)console.warn(error.message)}
+async function loadReports(){
+  const uid=currentUser?.id;
+  if(!uid){reports=[];renderReports();return}
+  let local=[];
+  try{local=(await storeGetAll('reports')).filter(r=>r.user_id===uid)}catch(e){msg('appMsg','ফোনের লোকাল স্টোরেজ পড়া যায়নি: '+cleanErr(e),true);return}
+  let queue=[];try{queue=await storeGetAll('queue')}catch(e){}
+  const pendingIds=new Set(queue.filter(q=>(q.row?.user_id||q.user_id)===uid&&q.row?.id).map(q=>String(q.row.id)));
+  if(navigator.onLine&&supabase){
+    try{
+      const {data,error}=await supabase.from('reports').select('*').eq('user_id',uid).order('date',{ascending:false});
+      if(error)throw error;
+      const cloud=data||[];
+      for(const row of cloud){if(!pendingIds.has(String(row.id)))await storePut('reports',{...row,_offline:false})}
+      const cloudIds=new Set(cloud.map(r=>String(r.id)));
+      const pendingLocal=local.filter(r=>pendingIds.has(String(r.id))||!cloudIds.has(String(r.id)));
+      reports=[...cloud.filter(r=>!pendingIds.has(String(r.id))),...pendingLocal];
+      const seen=new Set();reports=reports.filter(r=>{const k=String(r.id);if(seen.has(k))return false;seen.add(k);return true});
+    }catch(e){reports=local;msg('appMsg','ক্লাউড থেকে রিপোর্ট আনা যায়নি; ফোনে থাকা রিপোর্ট দেখানো হচ্ছে। '+cleanErr(e),true)}
+  }else{reports=local}
+  renderReports();renderSummary();updateSyncStatus();
+}
+$('signupBtn').onclick=async()=>{try{if(!supabase)throw Error('README অনুসারে Supabase config সেটআপ করুন');const email=$('email').value.trim(),password=$('password').value;if(!email||!password)throw Error('ইমেইল ও পাসওয়ার্ড দিন।');const {data,error}=await supabase.auth.signUp({email,password});if(error)throw error;if(data.session){msg('authMsg','অ্যাকাউন্ট তৈরি হয়েছে।')}else{msg('authMsg','অ্যাকাউন্ট তৈরি হয়েছে। ইমেইল নিশ্চিতকরণ চালু থাকলে ইমেইল যাচাই করে তারপর লগইন করুন।')} }catch(e){msg('authMsg',cleanErr(e),true)}};
+$('loginBtn').onclick=async()=>{try{if(!supabase)throw Error('Supabase config সেটআপ করুন');const {error}=await supabase.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error}catch(e){msg('authMsg',cleanErr(e),true)}};
+$('resetBtn').onclick=async()=>{try{if(!supabase)throw Error('Supabase config সেটআপ করুন');const email=$('email').value.trim();if(!email)throw Error('আগে ইমেইল লিখুন।');const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(error)throw error;msg('authMsg','পাসওয়ার্ড রিসেটের নির্দেশনা ইমেইলে পাঠানো হয়েছে।')}catch(e){msg('authMsg',cleanErr(e),true)}};
+$('logoutBtn').onclick=async()=>{if(supabase)await supabase.auth.signOut()};
+async function loadProfile(){try{const {data,error}=await supabase.from('profiles').select('email,role').eq('id',currentUser.id).maybeSingle();if(error)throw error;userRole=data?.role||'user';$('welcome').textContent='আমার ড্যাশবোর্ড';$('roleBadge').textContent=userRole==='admin'?'প্রশাসক':'সাধারণ ব্যবহারকারী';$('adminTab').classList.toggle('hidden',userRole!=='admin')}catch(e){msg('appMsg',cleanErr(e),true)}}
+function formData(){let o={};formFields.forEach(k=>o[k]=nums.has(k)?Number($(k).value||0):$(k).value);return o}
+function resetForm(){$('reportForm').reset();$('editId').value='';$('date').value=new Date().toLocaleDateString('en-CA');$('entryTitle').textContent='দৈনিক রিপোর্ট লিখুন'}
+$('clearBtn').onclick=resetForm;
+$('reportForm').onsubmit=async e=>{e.preventDefault();try{if(!currentUser)throw Error('প্রথমে লগইন করুন।');const d=formData(),editId=$('editId').value;let id=editId||crypto.randomUUID();if(!editId){const dup=reports.find(r=>r.date===d.date);if(dup){if(!confirm('এই তারিখের রিপোর্ট আগে আছে। সেটি প্রতিস্থাপন করবেন?'))return;id=dup.id}}const existing=reports.find(r=>String(r.id)===String(id));const row={...(existing||{}),...d,id,user_id:currentUser.id,updated_at:new Date().toISOString(),_offline:true};await storePut('reports',row);if(navigator.onLine&&supabase){const result=existing?await supabase.from('reports').upsert({...row,_offline:undefined},{onConflict:'id'}):await supabase.from('reports').insert(row);if(result.error){await queueOp({kind:'upsert',row});msg('appMsg','রিপোর্ট ফোনে নিরাপদে রাখা হয়েছে; ক্লাউডে পাঠানোর জন্য অপেক্ষা করছে।')}else{row._offline=false;await storePut('reports',row);msg('appMsg','রিপোর্ট ক্লাউডে সংরক্ষিত হয়েছে এবং ফোনেও রাখা হয়েছে।')}}else{await queueOp({kind:'upsert',row});msg('appMsg','ইন্টারনেট নেই—রিপোর্ট ফোনে সংরক্ষিত হয়েছে। ইন্টারনেট ফিরলে ক্লাউডে সিঙ্ক হবে।')}resetForm();await loadReports()}catch(e){msg('appMsg',cleanErr(e),true)}};
+async function syncQueue(){if(!navigator.onLine||!supabase||!currentUser)return;let queue;try{queue=await storeGetAll('queue')}catch(e){return}for(const op of queue){try{if((op.row?.user_id||op.user_id)!==currentUser.id)continue;let result;if(op.kind==='upsert'){const row={...op.row};delete row._offline;result=await supabase.from('reports').upsert(row,{onConflict:'id'})}else if(op.kind==='delete'){result=await supabase.from('reports').delete().eq('id',op.id).eq('user_id',currentUser.id)}if(result?.error)throw result.error;await storeDelete('queue',op.qid);if(op.kind==='upsert'){const row={...op.row,_offline:false};await storePut('reports',row)}}catch(e){console.warn('Sync pending:',e.message)}}updateSyncStatus();await loadReports()}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function renderReports(){let m=$('historyMonth').value,q=$('query').value.toLowerCase();let a=reports.filter(r=>(!m||String(r.date||'').startsWith(m))&&(!q||[r.date,r.bookName,r.notes,r.reflection].join(' ').toLowerCase().includes(q)));$('reportRows').innerHTML=a.map(r=>`<tr><td>${esc(r.date)}</td><td>${r.quranPages||0}</td><td>${r.bookPages||0}</td><td>${r.jamaat||0}</td><td>${r.dawatMin||0} মিনিট</td><td class="noprint"><button class="btn alt" data-edit="${r.id}">সম্পাদনা</button> <button class="btn red" data-del="${r.id}">মুছুন</button></td></tr>`).join('');$('noReports').classList.toggle('hidden',a.length>0);document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editReport(b.dataset.edit));document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>deleteReport(b.dataset.del))}
+function editReport(id){let r=reports.find(x=>String(x.id)===String(id));if(!r)return;formFields.forEach(k=>$(k).value=r[k]??'');$('editId').value=id;$('entryTitle').textContent='রিপোর্ট সম্পাদনা';document.querySelector('[data-tab="entry"]').click()}
+async function deleteReport(id){if(!confirm('এই রিপোর্ট মুছে ফেলবেন?'))return;try{if(navigator.onLine&&supabase){const {error}=await supabase.from('reports').delete().eq('id',id).eq('user_id',currentUser.id);if(error)throw error}else{await queueOp({kind:'delete',id,user_id:currentUser.id})}await storeDelete('reports',id);await loadReports();msg('appMsg',navigator.onLine?'রিপোর্ট মুছে ফেলা হয়েছে।':'অফলাইনে মুছতে চিহ্নিত হয়েছে; ইন্টারনেট ফিরলে ক্লাউড থেকেও মুছবে।')}catch(e){msg('appMsg',cleanErr(e),true)}}
+$('historyMonth').onchange=renderReports;$('query').oninput=renderReports;$('refreshBtn').onclick=loadReports;
+function renderSummary(){let m=$('month').value||new Date().toLocaleDateString('en-CA').slice(0,7),a=reports.filter(r=>String(r.date||'').startsWith(m));$('month').value=m;let sum=k=>a.reduce((s,r)=>s+Number(r[k]||0),0);let items=[['কুরআন তিলাওয়াত',sum('quranPages')+' পৃষ্ঠা'],['বই অধ্যয়ন',sum('bookPages')+' পৃষ্ঠা'],['হাদিস পাঠ',sum('hadithCount')+' টি'],['জামাতে সালাত',sum('jamaat')+' ওয়াক্ত'],['দাওয়াতি সময়',sum('dawatMin')+' মিনিট'],['তা’লীমী বৈঠক',sum('talim')+' টি'],['যোগাযোগ',sum('contacts')+' জন'],['বই ও লিফলেট',sum('booksDist')+sum('leaflets')+' টি']];$('summary').innerHTML=`<p><b>${esc(m)}</b> · মোট রিপোর্ট ${a.length} দিন</p><div class="statgrid">${items.map(x=>`<div class="stat">${x[0]}<strong>${x[1]}</strong></div>`).join('')}</div>`}
+$('summaryBtn').onclick=renderSummary;
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t===b));['entry','history','monthly','admin'].forEach(id=>$(id).classList.toggle('hidden',id!==b.dataset.tab));if(b.dataset.tab==='history')renderReports();if(b.dataset.tab==='monthly')renderSummary()});
+async function adminCheck(){if(userRole!=='admin')throw Error('শুধু প্রশাসক অনুমোদিত।')}
+$('loadUsersBtn').onclick=async()=>{try{await adminCheck();const {data,error}=await supabase.from('profiles').select('id,email,role').order('email');if(error)throw error;$('usersRows').innerHTML=(data||[]).map(u=>`<tr><td>${esc(u.email||'')}</td><td>${esc(u.role||'user')}</td><td>${esc(u.id)}</td></tr>`).join('');msg('adminMsg',`${(data||[]).length}টি অ্যাকাউন্ট পাওয়া গেছে।`)}catch(e){msg('adminMsg',cleanErr(e),true)}};
+$('loadAllBtn').onclick=async()=>{try{await adminCheck();const {data,error}=await supabase.from('reports').select('*').order('date',{ascending:false}).limit(2000);if(error)throw error;$('allRows').innerHTML=(data||[]).map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.user_id)}</td><td>${r.quranPages||0}</td><td>${r.bookPages||0}</td><td>${esc(r.notes||r.reflection||'')}</td></tr>`).join('');msg('adminMsg',`${(data||[]).length}টি রিপোর্ট লোড হয়েছে। সর্বোচ্চ ২০০০টি দেখানো হয়।`)}catch(e){msg('adminMsg',cleanErr(e),true)}};
+$('date').value=new Date().toLocaleDateString('en-CA');$('month').value=new Date().toLocaleDateString('en-CA').slice(0,7);
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(e=>console.warn('Service worker registration failed',e)))}
+updateSyncStatus();
+</script>
+</body></html>
