@@ -1,1 +1,0 @@
-# byaktigoto-report
